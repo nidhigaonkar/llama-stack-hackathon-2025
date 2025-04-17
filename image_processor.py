@@ -62,7 +62,7 @@ class ImageProcessor:
             print(f"Error processing {image_path}: {str(e)}")
             return None
 
-   def scan_desktop(self) -> List[str]:
+    def scan_desktop(self) -> List[str]:
        """Scan desktop for PNG files."""
        desktop_path = str(Path.home() / "Desktop")
        png_files = []
@@ -76,8 +76,7 @@ class ImageProcessor:
       
        return png_files
 
-
-   def generate_caption(self, image_path: str) -> str:
+    def generate_caption(self, image_path: str) -> str:
        """Generate caption for an image using BLIP."""
        try:
            image = Image.open(image_path).convert('RGB')
@@ -92,7 +91,7 @@ class ImageProcessor:
            return ""
 
 
-   def process_images(self) -> List[Dict[str, str]]:
+    def process_images(self) -> List[Dict[str, str]]:
        """Process all PNG images on desktop and return their metadata."""
        png_files = self.scan_desktop()
        processed_images = []
@@ -115,7 +114,7 @@ class ImageProcessor:
       
        return processed_images
 
-   def build_caption_index(image_dir: str):
+    def build_caption_index(image_dir: str):
         documents = []
         for path in Path(image_dir).glob("*.png"):
             caption = generate_caption(str(path))
