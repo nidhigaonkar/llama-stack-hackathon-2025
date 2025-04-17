@@ -4,7 +4,7 @@ from typing import Optional, List, Dict
 class LlamaAgent:
     def __init__(self, base_url="http://localhost:8321"):
         """Initialize Llama Stack client and agent."""
-        self.client = LlamaStackClient(base_url=base_url)
+        self.client = LlamaStackClient(api_key="9b6c7caa-68ac-4f87-93e9-eed31b9a95d1")
         
         # Get available models
         try:
