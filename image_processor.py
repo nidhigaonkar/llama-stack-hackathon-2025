@@ -4,6 +4,8 @@ from datetime import datetime
 from PIL import Image
 import torch
 from transformers import BlipProcessor, BlipForConditionalGeneration
+from llama_index import VectorStoreIndex, Document
+from llama_index.embeddings import HuggingFaceEmbedding
 import magic
 from typing import List, Dict, Tuple
 
@@ -75,4 +77,15 @@ class ImageProcessor:
                continue
       
        return processed_images
+
+   def build_caption_index(image_dir: str):
+        documents = []
+        for path in Path(image_dir).glob("*.png"):
+            caption = generate_caption(str(path))
+            text = f"{caption} ||| {path.name}"  # Append filename
+            documents.append(Document(text=text))
+        
+        embed_model = HuggingFaceEmbedding(model_name="sentence-transformers/all-MiniLM-L6-v2")
+        index = VectorStoreIndex.from_documents(documents, embed_model=embed_model)
+        return index
 
