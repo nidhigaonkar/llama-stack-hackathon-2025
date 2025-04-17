@@ -4,8 +4,8 @@ from datetime import datetime
 from PIL import Image
 import torch
 from transformers import BlipProcessor, BlipForConditionalGeneration
-from llama_index import VectorStoreIndex, Document
-from llama_index.embeddings import HuggingFaceEmbedding
+from llama_index.core import VectorStoreIndex, Document
+from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 import magic
 from typing import List, Dict, Tuple
 
