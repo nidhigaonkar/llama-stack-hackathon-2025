@@ -49,7 +49,7 @@ def main():
     
     # Initialize Llama Stack client and agent
     print("Connecting to Llama Stack...")
-    llama_agent = LlamaAgent()
+    llama_agent = LlamaAgent(api_key="9b6c7caa-68ac-4f87-93e9-eed31b9a95d1")
     
     # Initialize components
     image_processor = ImageProcessor()
