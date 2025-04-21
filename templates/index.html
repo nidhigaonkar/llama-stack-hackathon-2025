@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Local File Viewer</title>
+</head>
+<body>
+    <h1>View Local Files</h1>
+    <button onclick="getFiles()">Show Files</button>
+    <u1 id="fileList"></u1>
+
+    <script>
+       function getFiles() {
+        fetch('/list-files')
+            .then(response => response.json())
+            .then(files => {
+                const fileList = document.getElementById("fileList");
+                fileList.innerHTML = "";
+                files.forEach(file => {
+                    const li = document.createElement("li");
+                    const link = document.createElement("a");
+                    link.href = `/files/${encodeURIComponent(file)}`;
+                    link.textContent = file;
+                    link.target = "_blank"; // open in new tab
+                    li.appendChild(link);
+                    fileList.appendChild(li);
+                });
+            })
+            .catch(error => {
+                console.error("Error fetching files:", error);
+            });
+    }
+    </script>
+    <p>This is a simple test</p>
+</body>
+</html>
