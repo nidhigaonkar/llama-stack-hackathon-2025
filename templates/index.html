@@ -4,34 +4,134 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Local File Viewer</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            background: #fff;
+            margin: 0;
+        }
+    
+        button {
+            padding: 10px 20px;
+            border-radius: 6px;
+            border: none;
+            background-color: #1976d2;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 10px;
+        }
+    
+        button:hover {
+            background-color: #1565c0;
+        }
+    
+        pre {
+            background-color: #f4f4f4;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            overflow: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+    
+        img {
+            border-radius: 8px;
+        }
+    
+        video, audio {
+            max-width: 100%;
+            border-radius: 8px;
+        }
+    </style>
 </head>
 <body>
-    <h1>View Local Files</h1>
-    <button onclick="getFiles()">Show Files</button>
-    <u1 id="fileList"></u1>
+    <h1>Locate Files</h1>
+    <button onclick="getFiles()">Main</button>
+    <div id="gallery" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px; padding: 20px;"></div>
 
     <script>
-       function getFiles() {
-        fetch('/list-files')
-            .then(response => response.json())
-            .then(files => {
-                const fileList = document.getElementById("fileList");
-                fileList.innerHTML = "";
-                files.forEach(file => {
-                    const li = document.createElement("li");
-                    const link = document.createElement("a");
-                    link.href = `/files/${encodeURIComponent(file)}`;
-                    link.textContent = file;
-                    link.target = "_blank"; // open in new tab
-                    li.appendChild(link);
-                    fileList.appendChild(li);
-                });
-            })
-            .catch(error => {
-                console.error("Error fetching files:", error);
-            });
-    }
+        let currentPath = '';
+
+        function getFiles(path = '') {
+            currentPath = path;
+            fetch(`/list-files?path=${encodeURIComponent(path)}`)
+                .then(response => response.json())
+                .then(entries => {
+                    const gallery = document.getElementById("gallery");
+                    gallery.innerHTML = "";
+
+                    if (path !== '') {
+                        const backBtn = document.createElement("button");
+                        backBtn.textContent = "⬅️ Go Back";
+                        backBtn.onclick = () => {
+                            const parent = path.split('/').slice(0, -1).join('/');
+                            getFiles(parent);
+                        };
+                        gallery.appendChild(backBtn);
+                    }
+
+                    entries.forEach(entry => {
+                        const card = document.createElement("div");
+                        card.style.textAlign = "center";
+
+                        if (entry.is_dir) {
+                            const folderBtn = document.createElement("button");
+                            folderBtn.textContent = "📁 " + entry.name;
+                            folderBtn.onclick = () => getFiles(entry.path);
+                            card.appendChild(folderBtn);
+                        } else {
+                            const ext = entry.name.split('.').pop().toLowerCase();
+                            const fileUrl = `/files/${encodeURIComponent(entry.path)}`;
+
+                            if (['png', 'jpg', 'jpeg', 'gif', 'bmp', 'webp'].includes(ext)) {
+                                const img = document.createElement("img");
+                                img.src = fileUrl;
+                                img.alt = entry.name;
+                                img.style.maxWidth = "100%";
+                                img.style.borderRadius = "8px";
+                                card.appendChild(img);
+                            } else if (['mp4', 'webm', 'ogg'].includes(ext)) {
+                                const video = document.createElement("video");
+                                video.src = fileUrl;
+                                video.controls = true;
+                                video.style.maxWidth = "100%";
+                                video.style.borderRadius = "8px";
+                                card.appendChild(video);
+                            } else if (['mp3', 'wav', 'ogg'].includes(ext)) {
+                                const audio = document.createElement("audio");
+                                audio.src = fileUrl;
+                                audio.controls = true;
+                                audio.style.width = "100%";
+                                card.appendChild(audio);
+                            } else if (['txt', 'md', 'html', 'css', 'js', 'py', 'java'].includes(ext)) {
+                                const codeSnippet = document.createElement("pre");
+                                codeSnippet.style.maxHeight = "200px";
+                                codeSnippet.style.overflowY = "auto";
+                                fetch(fileUrl)
+                                    .then(response => response.text())
+                                    .then(text => {
+                                        codeSnippet.textContent = text.slice(0, 500); // Show first 500 chars
+                                    })
+                                    .catch(error => console.error("Fetch error:", error));
+                                card.appendChild(codeSnippet);
+                            }
+
+                            const fileLink = document.createElement("a");
+                            fileLink.href = fileUrl;
+                            fileLink.textContent = "📄 " + entry.name;
+                            fileLink.target = "_blank";
+                            fileLink.style.display = "block";
+                            fileLink.style.marginTop = "8px";
+                            card.appendChild(fileLink);
+                        }
+
+                        gallery.appendChild(card);
+                    });
+                })
+                .catch(error => console.error("Fetch error:", error));
+        }
     </script>
-    <p>This is a simple test</p>
 </body>
 </html>
