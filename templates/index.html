@@ -133,5 +133,33 @@
                 .catch(error => console.error("Fetch error:", error));
         }
     </script>
+    <textarea id="userPrompt" placeholder="Ask how to clean up your storage..." rows="3" cols="60"></textarea><br>
+    <button onclick="optimizeStorage()">🧠 Optimize My Storage</button>
+    <div id="llmOutput"></div>
+    <script>
+        function optimizeStorage() {
+            const prompt = document.getElementById('userPrompt').value;
+            if (!prompt) return alert("Enter a prompt.");
+    
+            // Build a summary of files
+            fetch(`/list-files?path=${encodeURIComponent(currentPath)}`)
+                .then(res => res.json())
+                .then(entries => {
+                    const summary = entries.map(e => `${e.name} - ${e.is_dir ? "Folder" : "File"}`).join("\n");
+    
+                    return fetch('/optimize-storage', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({ prompt, file_summary: summary })
+                    });
+                })
+                .then(res => res.json())
+                .then(data => {
+                    const outputDiv = document.getElementById("llmOutput");
+                    outputDiv.innerHTML = `<pre>${data.response || data.error}</pre>`;
+                })
+                .catch(err => console.error(err));
+        }
+    </script>
 </body>
 </html>
