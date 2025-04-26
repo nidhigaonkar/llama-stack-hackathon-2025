@@ -60,17 +60,30 @@ Respond with a markdown-formatted list of actions the user should take.
 """
 
     try:
+        # Create startup info to force UTF-8
+        startupinfo = None
+        if os.name == 'nt':  # If on Windows
+            startupinfo = subprocess.STARTUPINFO()
+            startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+
+        # Run the process with explicit UTF-8 encoding
+        env = os.environ.copy()
+        env["PYTHONIOENCODING"] = "utf-8"
+        
         result = subprocess.run(
             ['ollama', 'run', 'mistral'],
-            input=full_prompt,
-            text=True,
+            input=full_prompt.encode('utf-8'),  # Encode input as UTF-8
             capture_output=True,
+            env=env,
+            startupinfo=startupinfo,
             timeout=120
         )
-        return jsonify({'response': result.stdout})
+        
+        # Decode output using UTF-8
+        output = result.stdout.decode('utf-8')
+        return jsonify({'response': output})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
-
 
 @app.route("/files/<path:filename>")
 def serve_file(filename):
